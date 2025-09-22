@@ -485,6 +485,13 @@ async function createMondayLead(cf7Data, env) {
         text: cf7Data["zip-code"]
       });
     }
+    // Always add "Website" as the source for form submissions
+    if (columnMapping.source) {
+      columnValues.push({
+        id: columnMapping.source,
+        text: "Website"
+      });
+    }
     const columnValuesObject = {};
     columnValues.forEach((cv) => {
       if (cv.email) {
@@ -601,7 +608,8 @@ async function handleDebugMondayAPI(request, env) {
       name: "name",
       email: "lead_email",
       phone: "lead_phone",
-      location: "text_mkvqtqf7"
+      location: "text_mkvqtqf7",
+      source: "text_mkvynrwv"
     };
     const itemName = `${cf7Data["your-name"]} - ${cf7Data["your-email"]}`;
     const columnValues = [];
@@ -629,6 +637,13 @@ async function handleDebugMondayAPI(request, env) {
       columnValues.push({
         id: columnMapping.location || "text_mkvqtqf7",
         text: cf7Data["zip-code"]
+      });
+    }
+    // Always add "Website" as the source for form submissions
+    if (columnMapping.source) {
+      columnValues.push({
+        id: columnMapping.source,
+        text: "Website"
       });
     }
     const columnValuesObject = {};
