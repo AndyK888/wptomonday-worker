@@ -161,6 +161,19 @@ This version fixes several critical issues from the previous deployment:
 3. **Configuration**: Added proper wrangler.toml and package.json
 4. **Documentation**: Complete setup and usage documentation
 
+## Documentation
+
+### 📚 Complete Documentation
+- **[Technical Documentation](./DOCUMENTATION.md)** - Comprehensive technical guide
+- **[API Reference](./API_REFERENCE.md)** - Complete API documentation with examples
+
+### 🔍 Quick Links
+- [Architecture Overview](./DOCUMENTATION.md#architecture)
+- [Function Reference](./DOCUMENTATION.md#core-functions)
+- [Error Handling](./DOCUMENTATION.md#error-handling)
+- [API Endpoints](./API_REFERENCE.md#endpoints)
+- [cURL Examples](./API_REFERENCE.md#examples)
+
 ## License
 
 MIT License

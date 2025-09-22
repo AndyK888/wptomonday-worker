@@ -1,7 +1,23 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// src/index.ts
+/**
+ * WordPress to Monday.com Content Scheduler & CRM Integration
+ * Cloudflare Worker for handling Contact Form 7 webhooks and creating leads in Monday.com
+ * 
+ * @author Your Team
+ * @version 1.0.0
+ * @description This worker provides a bridge between WordPress Contact Form 7 submissions
+ *              and Monday.com CRM, automatically creating leads with proper field mapping
+ *              and source tracking.
+ */
+
+/**
+ * Creates a standardized JSON response with CORS headers
+ * @param {Object} data - Response data object containing message and data properties
+ * @param {number} status - HTTP status code (default: 200)
+ * @returns {Response} Cloudflare Response object with JSON content and CORS headers
+ */
 function createResponse(data, status = 200) {
   const response = {
     success: status >= 200 && status < 300,
@@ -21,6 +37,12 @@ function createResponse(data, status = 200) {
   });
 }
 __name(createResponse, "createResponse");
+
+/**
+ * Parses form-encoded data from Contact Form 7 webhook
+ * @param {string} data - URL-encoded form data string
+ * @returns {Object} Parsed form data with Contact Form 7 field names
+ */
 function parseFormEncodedData(data) {
   const params = new URLSearchParams(data);
   return {
@@ -34,6 +56,13 @@ function parseFormEncodedData(data) {
   };
 }
 __name(parseFormEncodedData, "parseFormEncodedData");
+
+/**
+ * Formats phone numbers to US standard format
+ * Handles various input formats and normalizes to +1XXXXXXXXXX US format
+ * @param {string} phoneInput - Raw phone number input in any format
+ * @returns {string} Formatted phone number in +1XXXXXXXXXX US format
+ */
 function formatPhoneNumber(phoneInput) {
   let cleanPhone = phoneInput.replace(/[^\d+]/g, "");
   if (cleanPhone.startsWith("001")) {
@@ -52,7 +81,19 @@ function formatPhoneNumber(phoneInput) {
   }
 }
 __name(formatPhoneNumber, "formatPhoneNumber");
+
+/**
+ * Main Cloudflare Worker handler
+ * Routes incoming requests to appropriate handler functions
+ */
 var index_default = {
+  /**
+   * Main fetch handler for all incoming requests
+   * @param {Request} request - Incoming HTTP request
+   * @param {Object} env - Environment variables and secrets
+   * @param {Object} ctx - Execution context
+   * @returns {Response} HTTP response
+   */
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const method = request.method;
@@ -136,6 +177,12 @@ var index_default = {
     }
   }
 };
+
+/**
+ * Handles GET / - Returns API information and documentation
+ * @param {Request} request - HTTP request object
+ * @returns {Response} JSON response with API documentation
+ */
 async function handleRoot(request) {
   const info = {
     name: "WP to Monday.com Content Scheduler & CRM Integration",
@@ -168,6 +215,12 @@ async function handleRoot(request) {
   });
 }
 __name(handleRoot, "handleRoot");
+
+/**
+ * Handles GET /health - Health check endpoint
+ * @param {Request} request - HTTP request object
+ * @returns {Response} JSON response with health status
+ */
 async function handleHealth(request) {
   return createResponse({
     message: "Service is healthy",
@@ -330,6 +383,15 @@ async function handleSyncContent(request, env) {
   }
 }
 __name(handleSyncContent, "handleSyncContent");
+
+/**
+ * Handles POST /webhook/cf7 - Main Contact Form 7 webhook endpoint
+ * Processes form submissions from WordPress and creates leads in Monday.com
+ * Features intelligent content-type detection and robust error handling
+ * @param {Request} request - HTTP request from Contact Form 7 webhook
+ * @param {Object} env - Environment variables containing Monday.com credentials
+ * @returns {Response} JSON response with lead creation result
+ */
 async function handleContactForm7Webhook(request, env) {
   try {
     let cf7Data;
@@ -405,6 +467,13 @@ async function handleContactForm7Webhook(request, env) {
   }
 }
 __name(handleContactForm7Webhook, "handleContactForm7Webhook");
+
+/**
+ * Handles POST /api/monday/create-lead - Direct API endpoint for creating leads
+ * @param {Request} request - HTTP request with JSON body containing lead data
+ * @param {Object} env - Environment variables containing Monday.com credentials
+ * @returns {Response} JSON response with creation result
+ */
 async function handleCreateMondayLead(request, env) {
   try {
     const body = await request.json();
@@ -449,6 +518,14 @@ async function handleCreateMondayLead(request, env) {
   }
 }
 __name(handleCreateMondayLead, "handleCreateMondayLead");
+
+/**
+ * Core function to create a lead in Monday.com
+ * Handles field mapping, phone formatting, and GraphQL mutation construction
+ * @param {Object} cf7Data - Contact form data with field names as keys
+ * @param {Object} env - Environment variables with Monday.com credentials and settings
+ * @returns {Object} Result object with success status and item ID or error message
+ */
 async function createMondayLead(cf7Data, env) {
   try {
     const columnMapping = env.MONDAY_COLUMN_MAPPING ? JSON.parse(env.MONDAY_COLUMN_MAPPING) : {
@@ -555,6 +632,15 @@ async function createMondayLead(cf7Data, env) {
   }
 }
 __name(createMondayLead, "createMondayLead");
+
+/**
+ * Advanced lead creation with failover logic
+ * Attempts to create lead multiple times, removing problematic fields on failure
+ * Implements intelligent retry mechanism to maximize success rate
+ * @param {Object} cf7Data - Contact form data
+ * @param {Object} env - Environment variables
+ * @returns {Object} Result with success status, item ID, and any warnings
+ */
 async function createMondayLeadWithFailover(cf7Data, env) {
   const fieldPriority = ["your-name", "your-email", "zip-code", "your-tel"];
   const warnings = [];
